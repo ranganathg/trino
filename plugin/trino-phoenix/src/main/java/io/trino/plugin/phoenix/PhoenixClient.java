@@ -152,6 +152,8 @@ import static io.trino.spi.StandardErrorCode.NOT_SUPPORTED;
 import static io.trino.spi.type.BigintType.BIGINT;
 import static io.trino.spi.type.BooleanType.BOOLEAN;
 import static io.trino.spi.type.DateType.DATE;
+import static io.trino.spi.type.DecimalType.DEFAULT_PRECISION;
+import static io.trino.spi.type.DecimalType.DEFAULT_SCALE;
 import static io.trino.spi.type.DecimalType.createDecimalType;
 import static io.trino.spi.type.DoubleType.DOUBLE;
 import static io.trino.spi.type.IntegerType.INTEGER;
@@ -391,8 +393,8 @@ public class PhoenixClient
                 return Optional.of(doubleColumnMapping());
 
             case Types.DECIMAL:
-                int precision = typeHandle.getColumnSize().orElse(38);
-                int decimalDigits = typeHandle.getDecimalDigits().orElse(0);
+                int precision = typeHandle.getColumnSize().orElse(DEFAULT_PRECISION);
+                int decimalDigits = typeHandle.getDecimalDigits().orElse(DEFAULT_SCALE);
                 // TODO does phoenix support negative scale?
                 precision = precision + max(-decimalDigits, 0); // Map decimal(p, -s) (negative scale) to decimal(p+s, 0).
                 if (precision > Decimals.MAX_PRECISION) {
