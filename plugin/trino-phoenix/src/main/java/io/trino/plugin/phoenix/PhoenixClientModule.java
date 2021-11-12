@@ -25,6 +25,7 @@ import io.trino.plugin.base.classloader.ClassLoaderSafeConnectorSplitManager;
 import io.trino.plugin.base.classloader.ForClassLoaderSafe;
 import io.trino.plugin.jdbc.ConfiguringConnectionFactory;
 import io.trino.plugin.jdbc.ConnectionFactory;
+import io.trino.plugin.jdbc.DecimalModule;
 import io.trino.plugin.jdbc.DriverConnectionFactory;
 import io.trino.plugin.jdbc.ForBaseJdbc;
 import io.trino.plugin.jdbc.ForLazyConnectionFactory;
@@ -112,6 +113,7 @@ public class PhoenixClientModule
 
         install(new JdbcDiagnosticModule());
         install(new IdentifierMappingModule());
+        install(new DecimalModule());
     }
 
     private void checkConfiguration(String connectionUrl)

@@ -108,6 +108,10 @@ import java.util.function.BiFunction;
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Verify.verify;
+import static io.trino.plugin.jdbc.DecimalConfig.DecimalMapping.ALLOW_OVERFLOW;
+import static io.trino.plugin.jdbc.DecimalSessionSessionProperties.getDecimalDefaultScale;
+import static io.trino.plugin.jdbc.DecimalSessionSessionProperties.getDecimalRounding;
+import static io.trino.plugin.jdbc.DecimalSessionSessionProperties.getDecimalRoundingMode;
 import static io.trino.plugin.jdbc.StandardColumnMappings.bigintColumnMapping;
 import static io.trino.plugin.jdbc.StandardColumnMappings.bigintWriteFunction;
 import static io.trino.plugin.jdbc.StandardColumnMappings.booleanColumnMapping;
@@ -385,8 +389,14 @@ public class PhoenixClient
                 return Optional.of(doubleColumnMapping());
 
             case Types.DECIMAL:
-                int precision = typeHandle.getColumnSize().orElse(DEFAULT_PRECISION);
+                Optional<Integer> columnSize = typeHandle.getColumnSize();
+                int precision = columnSize.orElse(DEFAULT_PRECISION);
                 int decimalDigits = typeHandle.getDecimalDigits().orElse(DEFAULT_SCALE);
+                if (getDecimalRounding(session) == ALLOW_OVERFLOW) {
+                    if (columnSize.isEmpty()) {
+                        return Optional.of(decimalColumnMapping(createDecimalType(Decimals.MAX_PRECISION, getDecimalDefaultScale(session)), getDecimalRoundingMode(session)));
+                    }
+                }
                 // TODO does phoenix support negative scale?
                 precision = precision + max(-decimalDigits, 0); // Map decimal(p, -s) (negative scale) to decimal(p+s, 0).
                 if (precision > Decimals.MAX_PRECISION) {
